@@ -1,0 +1,87 @@
+﻿# encoding: utf-8
+# 2020 R2
+SetScriptVersion(Version="20.2.221")
+
+# spaceClaim
+ScScriptPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\02-spaceClaim\NSAutoCreate.txt"
+modelPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\01-model\0.7-58.28-12.53-3.22-0.99-0.82.prt"
+lines = open(ScScriptPath, "r").readlines()
+
+fields = lines[4].split('\"')
+fields[1] = modelPath
+lines[4] = '\"'.join(fields)
+
+open(ScScriptPath, "w").writelines(lines)
+
+system1 = GetSystem(Name="Geom")
+geometryComponent1 = system1.GetComponent(Name="Geometry")
+geometryComponent1.Reset()
+geometry1 = system1.GetContainer(ComponentName="Geometry")
+geometry1.Edit(IsSpaceClaimGeometry=True)
+
+with open(ScScriptPath, "r") as f:
+    ScScript = f.read()
+
+geometry1.SendCommand(Language="Python", Command=ScScript)
+
+
+# Fluent
+Df = 0.8
+S = 1
+BR = 1
+inletMm = 4e-4
+inletTm = 1700
+inletTc = 1050
+flag = 1
+FluScriptPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\03-Fluent\00-FluScript\FluentBCSet.txt"
+exportPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\03-Fluent\01-FluData\ID" + \
+    str(flag)
+
+lines = open(FluScriptPath, "r").readlines()
+
+fields = lines[1].split('\"')
+fields[3] = str(Df)
+lines[1] = '\"'.join(fields)
+
+fields = lines[2].split('\"')
+fields[3] = str(S)
+lines[2] = '\"'.join(fields)
+
+fields = lines[3].split('\"')
+fields[3] = str(BR)
+lines[3] = '\"'.join(fields)
+
+fields = lines[4].split('\"')
+fields[3] = str(inletMm)+" [kg s^-1]"
+lines[4] = '\"'.join(fields)
+
+fields = lines[5].split('\"')
+fields[3] = str(inletTm)+"[K]"
+lines[5] = '\"'.join(fields)
+
+fields = lines[6].split('\"')
+fields[3] = str(inletTc)+"[K]"
+lines[6] = '\"'.join(fields)
+
+fields = lines[9].split('\"')
+fields[1] = exportPath
+lines[9] = '\"'.join(fields)
+
+open(FluScriptPath, "w").writelines(lines)
+
+system1 = GetSystem(Name="FLTG")
+meshComponent1 = system1.GetComponent(Name="Mesh")
+meshComponent1.Refresh()
+meshComponent1.Update(AllDependencies=True)
+setup1 = system1.GetContainer(ComponentName="Setup")
+flu_opt = setup1.GetFluentLauncherSettings()
+flu_opt.RunParallel = True
+flu_opt.NumberOfProcessors = 2
+flu_opt.Precision = "Double"
+setup1.Refresh()
+setup1.Edit()
+
+with open(FluScriptPath, "r") as f:
+    FLUscript = f.read()
+
+setup1.SendCommand(FLUscript)

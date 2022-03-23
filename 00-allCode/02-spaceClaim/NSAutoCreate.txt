@@ -1,0 +1,128 @@
+ClearAll()
+# Python Script, API Version = V19
+
+# Open File
+DocumentOpen.Execute(r"D:/FILES/Project/20220227-FilmSampleAutoGenerate/01-model/0.77-45.78-11.28-3.03-0.82-1.02.prt")
+# EndBlock
+
+
+# Rename 'Solid1' to 'FLUID'
+selection = BodySelection.Create(GetRootPart().Bodies[0])
+result = RenameObject.Execute(selection,"FLUID")
+# EndBlock
+
+# Rename 'Solid2' to 'SOLID'
+selection = BodySelection.Create(GetRootPart().Bodies[1])
+result = RenameObject.Execute(selection,"SOLID")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create(GetRootPart().Bodies[0].Faces[19])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("inlet-main")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create(GetRootPart().Bodies[0].Faces[1])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("inlet-crossflow")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create(GetRootPart().Bodies[0].Faces[11])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("inlet-coolant")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create(GetRootPart().Bodies[0].Faces[20])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("outlet-main")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create(GetRootPart().Bodies[0].Faces[0])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("outlet-crossflow")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([GetRootPart().Bodies[0].Faces[18],
+    GetRootPart().Bodies[1].Faces[2],
+    GetRootPart().Bodies[0].Faces[2]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("period-1")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([GetRootPart().Bodies[0].Faces[15],
+    GetRootPart().Bodies[1].Faces[3],
+    GetRootPart().Bodies[0].Faces[3]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("period-2")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([
+    GetRootPart().Bodies[1].Faces[0],
+    GetRootPart().Bodies[1].Faces[4]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("wall-solid")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([
+    GetRootPart().Bodies[0].Faces[5],
+    GetRootPart().Bodies[0].Faces[12]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("wall-fluidFine")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([GetRootPart().Bodies[0].Faces[17],
+    GetRootPart().Bodies[0].Faces[14],
+    GetRootPart().Bodies[0].Faces[13]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("wall-fluidCoarse")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([
+    GetRootPart().Bodies[0].Faces[7],
+    GetRootPart().Bodies[0].Faces[8],
+    GetRootPart().Bodies[0].Faces[9],
+    GetRootPart().Bodies[0].Faces[10]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("wall-holes")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([
+    GetRootPart().Bodies[0].Faces[16],
+    GetRootPart().Bodies[1].Faces[1],
+    GetRootPart().Bodies[1].Faces[5],
+    GetRootPart().Bodies[0].Faces[6]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("coupled-wall")
+# EndBlock
+
+# Create Named Selection Group
+primarySelection = FaceSelection.Create([
+    GetRootPart().Bodies[1].Faces[6],
+    GetRootPart().Bodies[0].Faces[4]])
+secondarySelection = Selection.Empty()
+result = NamedSelection.Create(primarySelection, secondarySelection)
+result.CreatedNamedSelection.SetName("coupled-hole")
+# EndBlock

@@ -1,0 +1,137 @@
+﻿# encoding: utf-8
+# 2020 R2
+SetScriptVersion(Version="20.2.221")
+
+# API
+dataPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\00-DataDesign\lhsData.csv"
+ScScriptPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\02-spaceClaim\NSAutoCreateByRay.txt"
+FluScriptPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\03-Fluent\00-FluScript\FluentBCSet.txt"
+
+# spaceClaim
+def spaceClaim(ScScriptPath, modelPath, Df, Sc, Pc, ThiOut, H):
+    with open(ScScriptPath,"r") as f:
+        lines = f.readlines()
+
+        fields = lines[4].split('\"')
+        fields[1] = modelPath    #传入模型地址
+        lines[4] = '\"'.join(fields)
+
+        fields = lines[5].split('=')
+        fields[1] = str(Df) + '\n'
+        lines[5] = '='.join(fields)
+
+        fields = lines[6].split('=')
+        fields[1] = str(Sc) + '\n'
+        lines[6] = '='.join(fields)
+
+        fields = lines[7].split('=')
+        fields[1] = str(Pc) + '\n'
+        lines[7] = '='.join(fields)
+
+        fields = lines[8].split('=')
+        fields[1] = str(ThiOut) + '\n'
+        lines[8] = '='.join(fields)
+
+        fields = lines[9].split('=')
+        fields[1] = str(H) + '\n'
+        lines[9] = '='.join(fields)
+
+    with open(ScScriptPath,"w") as f:
+        f.writelines(lines)
+
+    system1 = GetSystem(Name="Geom")
+    geometryComponent1 = system1.GetComponent(Name="Geometry")
+    geometryComponent1.Reset()
+    geometry1 = system1.GetContainer(ComponentName="Geometry")
+    geometry1.Edit(IsSpaceClaimGeometry=True)
+
+    with open(ScScriptPath,"r") as f:
+        ScScript = f.read()  
+
+    geometry1.SendCommand(Language="Python", Command=ScScript)
+ 
+
+# Fluent
+def fluent(FluScriptPath, exportPath, Df, Pc, BR, inletU, inletTm, inletTc):
+    with open(FluScriptPath,"r") as f:
+        lines = f.readlines()
+
+        fields = lines[1].split('\"')
+        fields[3] = str(Df)+"[mm]"
+        lines[1] = '\"'.join(fields)
+
+        fields = lines[2].split('\"')
+        fields[3] = str(Pc)
+        lines[2] = '\"'.join(fields)
+
+        fields = lines[3].split('\"')
+        fields[3] = str(BR)
+        lines[3] = '\"'.join(fields)
+
+        fields = lines[4].split('\"')
+        fields[3] = str(inletU)+" [m s^-1]"
+        lines[4] = '\"'.join(fields)
+
+        fields = lines[5].split('\"')
+        fields[3] = str(inletTm)+"[K]"
+        lines[5] = '\"'.join(fields)
+
+        fields = lines[6].split('\"')
+        fields[3] = str(inletTc)+"[K]"
+        lines[6] = '\"'.join(fields)
+
+        fields = lines[9].split('\"')
+        fields[1] = exportPath    #传入cas导出地址
+        lines[9] = '\"'.join(fields)
+
+    with open(FluScriptPath,"w") as f:
+        f.writelines(lines)
+
+    system1 = GetSystem(Name="FLTG")
+    meshComponent1 = system1.GetComponent(Name="Mesh")
+    meshComponent1.Refresh()
+    meshComponent1.Update(AllDependencies=True)
+    setup1 = system1.GetContainer(ComponentName="Setup")
+    setup1.Refresh()
+    flu_opt = setup1.GetFluentLauncherSettings()
+    flu_opt.RunParallel = True
+    flu_opt.NumberOfProcessors = 2
+    flu_opt.Precision = "Double"
+    setup1.Edit()
+
+    with open(FluScriptPath,"r") as f:
+        FLUscript = f.read()
+
+    setup1.SendCommand(FLUscript)
+    setup1.Exit()
+
+
+# main
+
+#import data
+with open(dataPath,"r") as f:
+    lines = f.readlines()
+
+flag = 1
+for line in lines:
+    num = line.split(',') 
+    modelID = num[0] + "-" + num[1] + "-" + num[2] + "-" + num[3] + "-" + num[4] + "-" + num[5]
+    modelPath = "D:/FILES/Project/20220227-FilmSampleAutoGenerate/01-model/" + modelID + ".prt"
+    exportPath = r"D:\FILES\Project\20220227-FilmSampleAutoGenerate\03-Fluent\02-FluData\ID" + str(flag) + "-" + modelID + ".cas" 
+    modelPath = modelPath.replace('\n', '')
+    exportPath = exportPath.replace('\n', '')
+
+    Df = float(num[0])
+    Sc = float(num[2])
+    Pc = float(num[3])
+    ThiOut = float(num[4])
+    H = float(num[5])
+    BR = 0.75
+    inletU = 40
+    inletTm = 1700
+    inletTc = 1050
+
+    flag = flag + 1
+
+    spaceClaim(ScScriptPath, modelPath, Df, Sc, Pc, ThiOut, H)
+    fluent(FluScriptPath, exportPath, Df, Pc, BR, inletU, inletTm, inletTc)

@@ -1,0 +1,117 @@
+ClearAll()
+# Python Script, API Version = V19
+
+# Open File
+DocumentOpen.Execute(r"D:/FILES/Project/20220227-FilmSampleAutoGenerate/01-model/0.49-25.47-11.59-3.28-0.71-1.16.prt")
+Df =0.49
+Sc =11.59
+Pc =3.28
+ThiOut =0.71
+H =1.16
+S = Sc*Df
+P = Pc*Df
+ThiIn = 1.0
+# EndBlock
+
+# Rename 'Solid1' to 'FLUID'
+selection = BodySelection.Create(GetRootPart().Bodies[0])
+result = RenameObject.Execute(selection,"FLUID")
+# EndBlock
+
+# Rename 'Solid2' to 'SOLID'
+selection = BodySelection.Create(GetRootPart().Bodies[1])
+result = RenameObject.Execute(selection,"SOLID")
+# EndBlock
+
+def create_ns(docObj, name):
+    sel = Selection.Create(docObj)
+    ns = NamedSelection.Create(sel, Selection())
+    ns.CreatedNamedSelection.SetName(name)
+
+point1 = Point.Create(MM(0), MM(0), MM(ThiOut+2*Df))
+inlet_main = RayFire.Fire(point1, Direction.Create(-1, 0, 0), 1e-5, 1e-5)[1]
+outlet_main = RayFire.Fire(point1, Direction.Create(1, 0, 0), 1e-5, 1e-5)[1]
+
+point2 = Point.Create(MM(0), MM(0), MM(-H/2))
+inlet_crossflow = RayFire.Fire(point2, Direction.Create(-1, 0, 0), 1e-5, 1e-5)[1]
+outlet_crossflow = RayFire.Fire(point2, Direction.Create(1, 0, 0), 1e-5, 1e-5)[1]
+
+point3 = Point.Create(MM(0), MM(0), MM(-H-ThiIn-2*Df))
+inlet_coolant = RayFire.Fire(point3, Direction.Create(0, 0, -1), 1e-5, 1e-5)[1]
+wallFluidCoarse_x1 = RayFire.Fire(point3, Direction.Create(-1, 0, 0), 1e-5, 1e-5)[1]
+wallFluidCoarse_x2 = RayFire.Fire(point3, Direction.Create(1, 0, 0), 1e-5, 1e-5)[1]
+
+periodFace1 = List[IDesignFace]()
+periodFace2 = List[IDesignFace]()
+period_y = P/2/1000
+
+coupledFaceWll =  List[IDesignFace]()
+coupled_z1 = 0
+coupled_z2 = ThiOut/1000
+
+wallFluidFine = List[IDesignFace]()
+wallFluidFine_z1 = -H/1000
+wallFluidFine_z2 = -(H+ThiIn)/1000
+
+wallSolid = List[IDesignFace]()
+wallSolid_x = (S/2+5*Df)/1000
+
+wallFluidCoarse = List[IDesignFace]()
+wallFluidCoarse_z = (ThiOut+5*Df)/1000
+
+wallHoles = List[IDesignFace]()
+wallHoles_z = -(H+ThiIn/2)/1000
+print(ThiIn/2)
+
+coupledholes =  List[IDesignFace]()
+coupledholes_z = ThiOut/2/1000
+
+for face in GetRootPart().Bodies[0].Faces:
+    if abs(face.GetFacePoint(0.5, 0.5).Y - period_y) < 1e-6:
+        periodFace1.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Y + period_y) < 1e-6:
+        periodFace2.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Z - coupled_z1) < 1e-6:
+        coupledFaceWll.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Z - coupled_z2) < 1e-6:
+        coupledFaceWll.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Z - wallFluidFine_z1) < 1e-6:
+        wallFluidFine.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Z - wallFluidFine_z2) < 1e-6:
+        wallFluidFine.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Z - wallFluidCoarse_z) < 1e-6:
+        wallFluidCoarse.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Z - wallHoles_z) < 1e-6:
+        wallHoles.Add(face)
+    if abs(face.GetFacePoint(0.5, 0.5).Z - coupledholes_z) < 1e-6:
+        coupledholes.Add(face) 
+wallFluidCoarse.Add(wallFluidCoarse_x1)
+wallFluidCoarse.Add(wallFluidCoarse_x2)
+
+for face in GetRootPart().Bodies[1].Faces:
+    if abs(face.GetFacePoint(0.5, 0.5).Y - period_y) < 1e-6:
+        periodFace1.Add(face)
+    elif abs(face.GetFacePoint(0.5, 0.5).Y + period_y) < 1e-6:
+        periodFace2.Add(face)
+    elif abs(face.GetFacePoint(0.5, 0.5).Z - coupled_z1) < 1e-6:
+        coupledFaceWll.Add(face)
+    elif abs(face.GetFacePoint(0.5, 0.5).Z - coupled_z2) < 1e-6:
+        coupledFaceWll.Add(face)
+    elif abs(face.GetFacePoint(0.5, 0.5).X - wallSolid_x) < 1e-6 or abs(face.GetFacePoint(0.5, 0.5).X + wallSolid_x) < 1e-6:
+        wallSolid.Add(face)
+    else:
+        coupledholes.Add(face)
+
+create_ns(inlet_main, "inlet-main")
+create_ns(outlet_main, "outlet-main")
+create_ns(inlet_crossflow, "inlet-crossflow")
+create_ns(outlet_crossflow, "outlet-crossflow")
+create_ns(inlet_coolant, "inlet-coolant")
+create_ns(periodFace1, "period-1")
+create_ns(periodFace2, "period-2")
+create_ns(coupledFaceWll, "coupled-wall")
+create_ns(wallFluidFine, "wall-fluidFine")
+create_ns(wallFluidCoarse, "wall-fluidCoarse")
+create_ns(wallSolid, "wall-solid")
+create_ns(wallHoles, "wall-holes")
+create_ns(coupledholes, "coupled-hole")

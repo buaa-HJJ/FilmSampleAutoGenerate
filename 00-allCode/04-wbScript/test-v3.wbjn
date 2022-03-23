@@ -1,0 +1,8 @@
+﻿# encoding: utf-8
+# 2020 R2
+SetScriptVersion(Version="20.2.221")
+system1 = GetSystem(Name="FLTG")
+meshComponent1 = system1.GetComponent(Name="Mesh")
+meshComponent1.Refresh()
+setup1 = system1.GetContainer(ComponentName="Setup")
+setup1.SendCommand(Command='(cx-gui-do cx-activate-tab-index "NavigationPane*Frame1(TreeTab)" 0)(cx-gui-do cx-activate-tab-index "NavigationPane*Frame1(TreeTab)" 1)/file/set-tui-version "20.2"(cx-gui-do cx-activate-tab-index "NavigationPane*Frame1(TreeTab)" 0)')

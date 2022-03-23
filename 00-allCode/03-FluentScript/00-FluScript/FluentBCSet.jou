@@ -1,0 +1,10 @@
+/file/set-tui-version "20.2"
+/define/named-expressions/edit "Df" definition "0.85" quit 
+/define/named-expressions/edit "Pc" definition "4.09" quit 
+/define/named-expressions/edit "BR" definition "0.75" quit 
+/define/named-expressions/edit "inletU" definition "40 [m s^-1]" quit 
+/define/named-expressions/edit "inletTm" definition "1700[K]" quit 
+/define/named-expressions/edit "inletTc" definition "1050[K]" quit 
+/define/boundary-conditions/wall *coupled* *coupled* () 0. no 0. no yes coupled no no no no no 0. no 0.5 no 1 
+/solve/initialize/hyb-initialization yes 
+/file/write-case-data "D:\FILES\Project\20220227-FilmSampleAutoGenerate\03-Fluent\02-FluData\ID1-0.85-30.16-12.84-4.09-0.83-0.75" 
